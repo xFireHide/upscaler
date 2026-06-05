@@ -1,0 +1,32 @@
+# ============================================================================
+#  Topaz-Killer Upscaler — dependências
+#  Python 3.10 ou 3.11 (NÃO use 3.12+; o stack basicsr/gfpgan não tem wheels).
+# ============================================================================
+#
+#  PINS CRÍTICOS (não atualize sem ler o README):
+#   - numpy < 2.0      -> basicsr/realesrgan quebram com NumPy 2.x
+#   - torchvision <0.17 OPCIONAL: o script já traz um shim que torna versões
+#     novas compatíveis; mantemos um pin seguro e testado mesmo assim.
+#
+#  GPU NVIDIA: instale o torch com CUDA ANTES deste arquivo, ex.:
+#     pip install torch==2.1.2 torchvision==0.16.2 \
+#       --index-url https://download.pytorch.org/whl/cu121
+#  CPU / Apple Silicon (MPS): o torch/torchvision abaixo já servem.
+# ----------------------------------------------------------------------------
+
+torch==2.1.2
+torchvision==0.16.2
+
+numpy<2.0
+opencv-python>=4.8,<5.0
+Pillow>=10.0,<11.0
+tqdm>=4.66
+
+# --- Stack de Super-Resolução / Restauração facial -------------------------
+realesrgan==0.3.0
+gfpgan==1.3.8
+basicsr==1.4.2
+facexlib==0.3.0
+
+# CodeFormer é opcional (alternativa ao GFPGAN). Instale manualmente se quiser:
+#   pip install codeformer-pip

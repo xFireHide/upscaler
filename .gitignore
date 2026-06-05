@@ -1,0 +1,38 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# ---- Ambientes virtuais ----
+.venv/
+venv/
+env/
+.testenv/
+
+# ---- Pesos de modelos (baixados automaticamente, NÃO versionar) ----
+weights/*
+!weights/.gitkeep
+*.pth
+*.onnx
+*.safetensors
+
+# ---- Dados de entrada/saída (imagens do usuário) ----
+input/*
+!input/.gitkeep
+output/*
+!output/.gitkeep
+
+# ---- Logs ----
+*.log
+upscaler.log
+
+# ---- Sistema operacional / editores ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
