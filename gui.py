@@ -395,11 +395,10 @@ class UpscalerGui:
             sharpen=sharpen,
             target_w=target_w,
             target_h=target_h,
+            resize_mode=self.var_resize.get(),
             out_fmt=self.var_format.get(),
             overwrite=bool(self.var_overwrite.get()),
         )
-        # resize-mode é global no módulo; ajusta para esta execução.
-        tk_up.RESIZE_MODE = self.var_resize.get()
 
         self._running = True
         self.btn_run.configure(state=tk.DISABLED)

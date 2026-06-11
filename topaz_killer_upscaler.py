@@ -34,6 +34,13 @@ from __future__ import annotations
 # a biblioteca.
 import sys
 import types
+import warnings
+
+# O torchvision 0.15/0.16 emite um UserWarning de depreciação ao importar
+# functional_tensor (inofensivo aqui — o shim abaixo cobre a remoção futura).
+warnings.filterwarnings(
+    "ignore", message=".*functional_tensor.*", category=UserWarning
+)
 
 
 def _install_torchvision_shim() -> None:
@@ -468,10 +475,42 @@ def fit_to_target(img_bgr: np.ndarray, target_w: int | None,
 # ===========================================================================
 # I/O de imagem
 # ===========================================================================
+_EXIF_ORIENTATION_TAG = 274
+
+
+def _apply_exif_orientation(img: np.ndarray, path: Path) -> np.ndarray:
+    """
+    cv2.imread(IMREAD_UNCHANGED) ignora a tag de orientação EXIF, então fotos
+    de celular em retrato sairiam deitadas. Lê a tag via Pillow (só metadados,
+    sem decodificar pixels) e aplica a transformação equivalente.
+    """
+    try:
+        with Image.open(path) as pil:
+            orientation = pil.getexif().get(_EXIF_ORIENTATION_TAG, 1)
+    except Exception:
+        return img
+    if orientation == 2:
+        return cv2.flip(img, 1)
+    if orientation == 3:
+        return cv2.rotate(img, cv2.ROTATE_180)
+    if orientation == 4:
+        return cv2.flip(img, 0)
+    if orientation == 5:
+        return cv2.transpose(img)
+    if orientation == 6:
+        return cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+    if orientation == 7:
+        return cv2.flip(cv2.transpose(img), -1)
+    if orientation == 8:
+        return cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    return img
+
+
 def read_image(path: Path) -> np.ndarray:
     img = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
     if img is None:
         raise ValueError(f"Arquivo ilegível ou corrompido: {path.name}")
+    img = _apply_exif_orientation(img, path)
     if img.ndim == 2:
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     elif img.shape[2] == 4:
@@ -503,6 +542,7 @@ class ProcessOptions:
     sharpen: float = SHARPEN_AMOUNT
     target_w: int | None = TARGET_WIDTH
     target_h: int | None = TARGET_HEIGHT
+    resize_mode: str = RESIZE_MODE
     out_fmt: str = OUTPUT_FORMAT
     overwrite: bool = False
 
@@ -576,7 +616,8 @@ def process_one(pipeline: UpscalePipeline, src: Path, out_path: Path,
     output = unsharp(output, opts.sharpen)
 
     # 7. Resolução exata
-    output = fit_to_target(output, opts.target_w, opts.target_h)
+    output = fit_to_target(output, opts.target_w, opts.target_h,
+                           mode=opts.resize_mode)
 
     save_image(output, out_path, opts.out_fmt)
     out_h, out_w = output.shape[:2]
@@ -717,6 +758,7 @@ def main() -> int:
         auto_analyze=args.analyze, auto_denoise=args.auto_denoise,
         detail=args.detail, sharpen=args.sharpen,
         target_w=target_w, target_h=target_h,
+        resize_mode=args.resize_mode,
         out_fmt=args.format, overwrite=args.overwrite,
     )
 
