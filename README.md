@@ -1,8 +1,3 @@
-# Topaz-Killer Upscaler
-
-Batch super-resolution (Real-ESRGAN + GFPGAN): ultra-sharpness, realistic
-microtexture, compression-artifact removal, outputs up to 8K.
-
 ## ⚠️ Compatibility (avoids ~90% of errors)
 
 - **Use Python 3.10 or 3.11.** No `basicsr`/`gfpgan` wheels exist for 3.12+.
